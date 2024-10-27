@@ -31,12 +31,12 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 # 닉네임 중복 방지(함수형으로)
 # 오류해결 : https://stackoverflow.com/questions/5895588/django-multivaluedictkeyerror-error-how-do-i-deal-with-it
-@csrf_exempt
-def check_nickname(request):
-    if request.method == 'POST':
-        nickname = request.POST.get('nickname')  # form-data에서 닉네임 가져오기
-        if Profile.objects.filter(nickname=nickname).exists():  # 중복 체크
-            return JsonResponse({'status': 'fail', 'message': '중복되는 이름입니다.'}, status=400)
-        else:
-            return JsonResponse({'status': 'success', 'message': '사용가능한 이름입니다.'})
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+# @csrf_exempt
+# def check_nickname(request):
+#     if request.method == 'POST':
+#         nickname = request.POST.get('nickname')  # form-data에서 닉네임 가져오기
+#         if Profile.objects.filter(nickname=nickname).exists():  # 중복 체크
+#             return JsonResponse({'status': 'fail', 'message': '중복되는 이름입니다.'}, status=400)
+#         else:
+#             return JsonResponse({'status': 'success', 'message': '사용가능한 이름입니다.'})
+#     return JsonResponse({'error': 'Invalid request'}, status=400)

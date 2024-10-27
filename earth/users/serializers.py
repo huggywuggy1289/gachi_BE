@@ -1,30 +1,43 @@
-from django.contrib.auth.models import User
+from .models import *
 from django.contrib.auth.password_validation import validate_password # 장고의 기본 패스워드 검증도구
 from django.contrib.auth import authenticate # user 인증함수. 자격증명 유효한 경우 User객체 반환
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token # 토큰 모델
 from rest_framework.validators import UniqueValidator # 이메일 중복방지를 위한 검증 도구
-
-from .models import Profile
+from django.core.validators import RegexValidator # 아이디 조건
 
 # 회원가입 시리얼라이저
 class RegisterSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
+    userid = serializers.CharField(
+        help_text="아이디",
         required = True,
-        validators = [UniqueValidator(queryset=User.objects.all())], # 이메일 중복검증
+        max_length=150,
+        validators = [
+            UniqueValidator(queryset=User.objects.all()),   # id 중복검증
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',  # 허용할 문자 및 숫자 정의
+                message='150자 이하 문자, 숫자 그리고 @/./+/-/_만 가능합니다.',
+                code='invalid_userid'
+            ),
+            ], 
     )
     password = serializers.CharField(
+        help_text="비밀번호",
         write_only = True,
         required = True,
         validators = [validate_password] # import한 비밀번호에 대한 검증
 
     )
-    password2 = serializers.CharField(write_only = True, required = True) # 검증은 한번만 해도 됨.
+    password2 = serializers.CharField(
+        help_text="비밀번호 재입력",
+        write_only = True,
+        required = True) # 검증은 한번만 해도 됨.
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'password2')
+        fields = ('username', 'userid', 'password', 'password2')
+        # username = 닉네임 / userid = 아이디
     
     def validate(self, data):
         if data['password'] != data['password2']:
@@ -37,7 +50,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         # create 요청을 통해 유저를 생성하고 토큰을 생성하게 함.
         user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            userid=validated_data['userid'],
         )
 
         user.set_password(validated_data['password'])
@@ -48,7 +61,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     
 # 로그인 시리얼라이저
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
+    userid = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):
@@ -66,5 +79,4 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ("nickname", "image")
-        
+        fields = ()
