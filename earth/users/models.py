@@ -11,7 +11,7 @@ from django.dispatch import receiver
 # user확장
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    nickname = models.CharField(max_length=40, blank=True)
+    nickname = models.CharField(max_length=40, blank=True, unique=True, null=True)
     image = models.ImageField(upload_to='profile/', default='default.png')
 
 # User가 생성될 때 자동으로 프로필 생성
