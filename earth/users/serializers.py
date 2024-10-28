@@ -13,6 +13,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token # 토큰 모델
 from rest_framework.validators import UniqueValidator # 이메일 중복방지를 위한 검증 도구
 from django.core.validators import RegexValidator # 아이디 조건
+from django.contrib.auth import get_user_model
 
 # 회원가입 시리얼라이저
 class RegisterSerializer(serializers.ModelSerializer):
@@ -72,10 +73,18 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):
-        data['username'] = data.pop('userid')
-        user = authenticate(**data)
-        if user:
-            token, created = Token.objects.get_or_create(user=user)
+        User = get_user_model()  # 현재 사용자 모델 가져오기
+        try:
+            # userid로 사용자 객체를 가져오기
+            user = User.objects.get(userid=data['userid'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {"error": "Unable to log in with provided credentials."}
+            )
+        
+        # 사용자 객체가 존재하면 authenticate 사용
+        if user.check_password(data['password']):
+            token = Token.objects.get(user=user)
             return token
         raise serializers.ValidationError(
             {"error": "Unable to log in with provided credentials."}
