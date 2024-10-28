@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 
     # 앱
     'users',
+    'us',
 
 ]
 

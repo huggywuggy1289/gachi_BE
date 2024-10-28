@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 logger = logging.getLogger(__name__)
-
+from rest_framework.authtoken.models import Token
 from django.conf import settings
 import jwt
 from .models import *
@@ -80,8 +80,6 @@ class LoginSerializer(serializers.Serializer):
         raise serializers.ValidationError(
             {"error": "Unable to log in with provided credentials."}
         )
-
-
     
 # 모델 시리얼라이저
 class ProfileSerializer(serializers.ModelSerializer):

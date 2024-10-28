@@ -36,7 +36,19 @@ class LoginView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data  # 토큰 받아오기
         return Response({"token": token.key}, status=status.HTTP_200_OK)
-    
+
+# 로그아웃 뷰(post)
+class LogoutView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 요청한 사용자의 토큰을 가져옵니다.
+        token = request.auth
+        # 사용자의 토큰 삭제
+        if token:
+            token.delete()
+        return Response({"message": "Successfully logged out."}, status=200)
+
 # 프로필 모델
 class ProfileView(generics.RetrieveUpdateAPIView):
     queryset = Profile.objects.all()
@@ -44,7 +56,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     lookup_field = 'pk'
     permission_classes = [IsAuthenticated]
 
-#회원정보 수정 뷰
+# 회원정보 수정 뷰
 class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]
@@ -58,7 +70,7 @@ class UpdateProfileView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)  # 유효성 검사
         serializer.save()  # 데이터 저장
         return Response({"username": serializer.data['username']})  # 업데이트된 닉네임 반환
-    
+
 # 회원탈퇴
 class UserDeleteAPIView(generics.DestroyAPIView):
     queryset = User.objects.all()
@@ -69,18 +81,3 @@ class UserDeleteAPIView(generics.DestroyAPIView):
         user = request.user
         user.delete()  # 사용자를 삭제합니다.
         return Response({"detail": "User has been deleted."}, status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-# 닉네임 중복 방지(함수형으로)
-# 오류해결 : https://stackoverflow.com/questions/5895588/django-multivaluedictkeyerror-error-how-do-i-deal-with-it
-# @csrf_exempt
-# def check_nickname(request):
-#     if request.method == 'POST':
-#         nickname = request.POST.get('nickname')  # form-data에서 닉네임 가져오기
-#         if Profile.objects.filter(nickname=nickname).exists():  # 중복 체크
-#             return JsonResponse({'status': 'fail', 'message': '중복되는 이름입니다.'}, status=400)
-#         else:
-#             return JsonResponse({'status': 'success', 'message': '사용가능한 이름입니다.'})
-#     return JsonResponse({'error': 'Invalid request'}, status=400)
