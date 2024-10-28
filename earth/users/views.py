@@ -81,3 +81,14 @@ class UserDeleteAPIView(generics.DestroyAPIView):
         user = request.user
         user.delete()  # 사용자를 삭제합니다.
         return Response({"detail": "User has been deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+# 문의하기
+class ContactView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"문의는 이곳으로 해주세요! : Instagram @joinusearth_24"})
+
+# 구매목록
+
+# 테마 변경
