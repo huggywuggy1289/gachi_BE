@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 logger = logging.getLogger(__name__)
 
@@ -72,16 +72,16 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):
+        data['username'] = data.pop('userid')
         user = authenticate(**data)
         if user:
-            token, created = Token.objects.get_or_create(user=user)  # 유저에 대한 토큰 가져오기
-            return {
-                'token': token.key,  # 토큰 반환
-                'user': user.username  # 추가로 사용자 정보도 반환 가능
-            }
+            token, created = Token.objects.get_or_create(user=user)
+            return token
         raise serializers.ValidationError(
             {"error": "Unable to log in with provided credentials."}
         )
+
+
     
 # 모델 시리얼라이저
 class ProfileSerializer(serializers.ModelSerializer):
@@ -89,43 +89,30 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ()
 
-# 회원정보(닉네임) 수정을 위한 유저시리얼라이저
+# 유저시리얼라이저
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
-    # 닉네임
-    username = serializers.CharField(
-        max_length = 40,
-        min_length = 1,
-        write_only = True
-    )
-    # 비밀번호
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
-    
     class Meta:
         model = User
-        fields = [
-            'email',
-            'username',
-            'password',
-            'token'
-        ]
-        
-        read_only_fields = ('token', )
+        fields = ("username", "password")
+        read_only_fields = ("id",)
 
+    def validate_username(self, value):
+        if len(value) < 1:
+            raise serializers.ValidationError("Username must be at least one character long.")
+        return value
+
+    def create(self, validated_data):
+        #password = validated_data.get("password")
+        user = super().create(validated_data)
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
+    
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        
-        for (key, value) in validated_data.items():
-            setattr(instance, key, value)
-
-        # 비밀번호 해시처리
-        if password is not None:
-            instance.set_password(password)
-
+        instance.username = validated_data.get("username", instance.username)
+        if "password" in validated_data:
+            instance.set_password(validated_data["password"])
         instance.save()
-
         return instance

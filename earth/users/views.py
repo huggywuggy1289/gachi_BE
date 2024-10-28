@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from rest_framework.views import APIView
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -26,16 +27,15 @@ class RegisterView(generics.CreateAPIView):
         response.data['token'] = str(refresh.access_token)
         return response
 
-# 로그인
+# 로그인 뷰
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
-    permission_classes = [AllowAny]  # 로그인 엔드포인트에 대한 접근 허용
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data['token'] # 토큰 받아오기
-        return Response({"token" : token}, status=status.HTTP_200_OK)
+        token = serializer.validated_data  # 토큰 받아오기
+        return Response({"token": token.key}, status=status.HTTP_200_OK)
     
 # 프로필 모델
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -44,30 +44,21 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     lookup_field = 'pk'
     permission_classes = [IsAuthenticated]
 
+
 # 회원정보 수정 뷰
-class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    permission_classes = [CustomReadOnly]
-    renderer_classes = [UserJSONRenderer]
-    serializer_class = UserSerializer
+class UserRetrieveUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
-    def get(self, request, *args, **kwargs):
-        
-        serializer = self.serializer_class(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def patch(self, request, *args, **kwargs):
-        serializer_data = request.data
-        # 4.
-        serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
-        )
-        
-        serializer.is_valid(raise_exception=True)
-        # 5.
-        serializer.save()
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def put(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
     
 # 회원탈퇴
 class UserDeleteAPIView(generics.DestroyAPIView):
