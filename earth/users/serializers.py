@@ -1,3 +1,10 @@
+from datetime import datetime, timedelta
+
+import logging
+logger = logging.getLogger(__name__)
+
+from django.conf import settings
+import jwt
 from .models import *
 from django.contrib.auth.password_validation import validate_password # 장고의 기본 패스워드 검증도구
 from django.contrib.auth import authenticate # user 인증함수. 자격증명 유효한 경우 User객체 반환
@@ -67,12 +74,13 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(**data)
         if user:
-            token = Token.objects.get(user=user) # 토큰에서 유저필드를 찾은 후 반환
-            # 딕셔너리로 전달되면 오류가 발생한다.
-            return token
-        # 아닐 경우
+            token, created = Token.objects.get_or_create(user=user)  # 유저에 대한 토큰 가져오기
+            return {
+                'token': token.key,  # 토큰 반환
+                'user': user.username  # 추가로 사용자 정보도 반환 가능
+            }
         raise serializers.ValidationError(
-            {"error" : "Unable to log in with provided credentials."}
+            {"error": "Unable to log in with provided credentials."}
         )
     
 # 모델 시리얼라이저
@@ -80,3 +88,44 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ()
+
+# 회원정보(닉네임) 수정을 위한 유저시리얼라이저
+class UserSerializer(serializers.ModelSerializer):
+
+    # 닉네임
+    username = serializers.CharField(
+        max_length = 40,
+        min_length = 1,
+        write_only = True
+    )
+    # 비밀번호
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+    
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'username',
+            'password',
+            'token'
+        ]
+        
+        read_only_fields = ('token', )
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        
+        for (key, value) in validated_data.items():
+            setattr(instance, key, value)
+
+        # 비밀번호 해시처리
+        if password is not None:
+            instance.set_password(password)
+
+        instance.save()
+
+        return instance

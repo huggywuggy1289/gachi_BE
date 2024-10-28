@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 
 class CustomReadOnly(permissions.BasePermission):
 # GET(조회)요청은 누구나, PUT/PATCH(수정 및 삭제 등)은 해당유저만
