@@ -6,6 +6,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('login/', LoginView.as_view()),
     path('profile/<int:pk>/', ProfileView.as_view()),
-    path('current/', UserRetrieveUpdateAPIView.as_view()),
+    path('profile/update/', UpdateProfileView.as_view(), name='update-profile'),
     path('delete/', UserDeleteAPIView.as_view(), name='user-delete'),
 ]

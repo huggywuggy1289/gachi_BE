@@ -44,21 +44,20 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     lookup_field = 'pk'
     permission_classes = [IsAuthenticated]
 
-
-# 회원정보 수정 뷰
-class UserRetrieveUpdateAPIView(APIView):
+#회원정보 수정 뷰
+class UpdateProfileView(generics.UpdateAPIView):
+    serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user  # 요청한 사용자의 객체를 가져옴
 
-    def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()  # user 인스턴스 가져오기
+        serializer = self.get_serializer(instance, data=request.data, partial=True)  # PATCH 요청 처리
+        serializer.is_valid(raise_exception=True)  # 유효성 검사
+        serializer.save()  # 데이터 저장
+        return Response({"username": serializer.data['username']})  # 업데이트된 닉네임 반환
     
 # 회원탈퇴
 class UserDeleteAPIView(generics.DestroyAPIView):

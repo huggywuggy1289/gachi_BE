@@ -89,30 +89,18 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ()
 
-# 유저시리얼라이저
-class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+# 회원정보 수정 시리얼라이저
+class UpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(required=True, write_only=True)
 
     class Meta:
         model = User
-        fields = ("username", "password")
-        read_only_fields = ("id",)
+        fields = ['username', 'password']
 
-    def validate_username(self, value):
-        if len(value) < 1:
-            raise serializers.ValidationError("Username must be at least one character long.")
-        return value
-
-    def create(self, validated_data):
-        #password = validated_data.get("password")
-        user = super().create(validated_data)
-        user.set_password(validated_data["password"])
-        user.save()
-        return user
-    
     def update(self, instance, validated_data):
-        instance.username = validated_data.get("username", instance.username)
-        if "password" in validated_data:
-            instance.set_password(validated_data["password"])
+        # 비밀번호 업데이트
+        password = validated_data.pop('password')
+        instance.username = validated_data.get('username', instance.username)
+        instance.set_password(password)  # 비밀번호 해시화
         instance.save()
         return instance
