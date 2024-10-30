@@ -45,3 +45,28 @@ class CardPostView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+# 프레임 선택 페이지 뷰
+class FrameSelection(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 유저가 프레임을 골랐는지 확인
+    def get(self, request):
+        frame, created = Frame.objects.get_or_create(user=request.user)
+        serializer = FrameSerializer(frame)
+        return Response(serializer.data)
+    
+    # 프레임 고르면
+    def post(self, request):
+        frame, created = Frame.objects.get_or_create(user = request.user)
+        serializer = FrameSerializer(frame, data=request.data)
+        # 프레임 선택 완료여부 판별
+        if not serializer.initial_data.get('frame_completed', False):
+            return Response({"message": "프레임 선택해야 카드 작성이 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
+        # 데이터 유효성 검사
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "프레임 잘 골랐습니다.",
+                "redirect_url": "/join/completed/"
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
