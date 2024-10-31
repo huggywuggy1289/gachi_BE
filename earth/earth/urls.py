@@ -39,8 +39,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
-    path('earthApp/', include('earthApp.urls')),
     path('join/', include('join.urls')),
+    path('market/', include('market.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [

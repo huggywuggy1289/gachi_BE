@@ -60,8 +60,8 @@ INSTALLED_APPS = [
 
     # 앱
     'users',
-    'earthApp',
     'join',
+    'market',
 ]
 
 MIDDLEWARE = [

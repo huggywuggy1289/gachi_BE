@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class EarthappConfig(AppConfig):
+class MarketConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'earthApp'
+    name = 'market'
