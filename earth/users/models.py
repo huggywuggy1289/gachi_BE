@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
+from rest_framework_simplejwt.tokens import RefreshToken
 # 활용할 필드목록
 # useranme: ID로 활용, required=True
 # email: required=True
@@ -9,6 +10,12 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     userid = models.CharField(max_length=150, unique=True)
+    points = models.IntegerField(default=0)  # 사용자 포인트 필드 추가
+
+    @property
+    def token(self):
+        refresh = RefreshToken.for_user(self)
+        return str(refresh.access_token)
 
 # user확장
 class Profile(models.Model):
