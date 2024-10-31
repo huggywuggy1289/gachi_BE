@@ -40,3 +40,16 @@ class FrameSerializer(serializers.ModelSerializer):
         model = Frame
         fields = ['user', 'frame_completed']
         extra_kwargs = {'user': {'read_only': True}}  # user 필드는 자동으로 설정
+
+# 이미지 저장 시리얼라이저
+class PhotoSerializer(serializers.ModelSerializer):
+    decorated_image = serializers.ImageField(use_url = True)
+
+    def validate_decorated_image(self, value):
+        if not value:
+            raise serializers.ValidationError("Decorated image is required.")
+        return value
+
+    class Meta:
+        model = Photo
+        fields = ('decorated_image', 'card_post')

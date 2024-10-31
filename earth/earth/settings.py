@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# gitignore로 옮김
 SECRET_KEY = 'django-insecure-8@msgdn(%fl$uu9dxi*k305-h+(ps#wqm0o9c@6)ff%4k%q#c-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'join.apps.JoinConfig',
     # 'users.apps.UsersConfig',
 
     'rest_framework',

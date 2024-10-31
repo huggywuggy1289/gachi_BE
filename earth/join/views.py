@@ -6,6 +6,7 @@ from .models import *
 from rest_framework import status
 from django.shortcuts import redirect
 
+#튜토리얼 뷰
 class TutorialView(APIView):
     permission_class = [IsAuthenticated]
 
@@ -37,8 +38,10 @@ class CardPostView(APIView):
         
         serializer = CardPostSerializer(data = request.data)
         if serializer.is_valid():
-            serializer.save(author=request.user)
+            card_post = serializer.save(author=request.user)  # 카드 포스트 저장
+            card_post_id = card_post.id
             return Response({
+                "card_post_id" : card_post_id,
                 "message": "카드가 성공적으로 작성되었습니다.",
                 "redirect_url": "/join/frame_selection/"
             }, status=status.HTTP_201_CREATED)
@@ -59,9 +62,11 @@ class FrameSelection(APIView):
     def post(self, request):
         frame, created = Frame.objects.get_or_create(user = request.user)
         serializer = FrameSerializer(frame, data=request.data)
+        
         # 프레임 선택 완료여부 판별
         if not serializer.initial_data.get('frame_completed', False):
             return Response({"message": "프레임 선택해야 카드 작성이 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
+        
         # 데이터 유효성 검사
         if serializer.is_valid():
             serializer.save()
@@ -69,4 +74,31 @@ class FrameSelection(APIView):
                 "message": "프레임 잘 골랐습니다.",
                 "redirect_url": "/join/completed/"
             }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#----------------------실천카드 완성-----------------------
+# 이미지 저장단계
+class CompletedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 이미지 저장됐는지 상태확인
+    def get(self, request):
+        # 사용자가 만든 카드 포스트와 관련된 이미지를 가져옴
+        photos = Photo.objects.filter(card_post__author=request.user)
+        serializer = PhotoSerializer(photos, many=True)
+        return Response({"message": "완성된 이미지가 저장되었습니다..", "images": serializer.data})
+    # 이미지 저장하는 메서드 추가
+    def post(self, request):
+        card_post_id = request.data.get('card_post_id')
+        if not card_post_id:
+            return Response({"message": "card_post_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            card_post = CardPost.objects.get(id=card_post_id, author=request.user)
+        except CardPost.DoesNotExist:
+            return Response({"message": "해당 카드 포스트가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 이미지 저장
+        serializer = PhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(card_post=card_post)
+            return Response({"message": "이미지가 저장되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
