@@ -7,8 +7,6 @@ from rest_framework.authtoken.models import Token # 토큰 모델
 from rest_framework.validators import UniqueValidator # 이메일 중복방지를 위한 검증 도구
 from django.core.validators import RegexValidator # 아이디 조건
 
-
-
 # 회원가입 시리얼라이저
 class RegisterSerializer(serializers.ModelSerializer):
     userid = serializers.CharField(
