@@ -85,7 +85,9 @@ class CompletedView(APIView):
         # 사용자가 만든 카드 포스트와 관련된 이미지를 가져옴
         photos = Photo.objects.filter(card_post__author=request.user)
         serializer = PhotoSerializer(photos, many=True)
-        return Response({"message": "완성된 이미지가 저장되었습니다..", "images": serializer.data})
+        points = request.user.points
+        return Response({"points":points,"message": "완성된 이미지가 저장되었습니다..", "images": serializer.data})
+    
     # 이미지 저장하는 메서드 추가
     def post(self, request):
         card_post_id = request.data.get('card_post_id')
@@ -99,6 +101,8 @@ class CompletedView(APIView):
         # 이미지 저장
         serializer = PhotoSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(card_post=card_post)
+            photo = serializer.save(card_post=card_post)
+            request.user.points += photo.point # 포인트 적립
+            request.user.save()  # 사용자 정보 저장
             return Response({"message": "이미지가 저장되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

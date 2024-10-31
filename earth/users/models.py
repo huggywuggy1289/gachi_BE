@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class User(AbstractUser):
     userid = models.CharField(max_length=150, unique=True)
+    points = models.IntegerField(default=0)  # 사용자 포인트 필드 추가
 
     @property
     def token(self):

@@ -37,6 +37,7 @@ class Photo(models.Model):
     card_post = models.ForeignKey(CardPost, on_delete=models.CASCADE, related_name='decorated_images', null=True, blank=True)
     decorated_image = models.ImageField(upload_to = 'join/')# 꾸민 이미지 저장 경로 설정
     update_time = models.DateTimeField(auto_now_add=True)
+    point = models.IntegerField("적립금", default = 50) # 포인트 50점 적립
 
     # 현재 날짜로 저장되도록 수정
     def save(self, *args, **kwargs):
