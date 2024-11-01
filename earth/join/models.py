@@ -47,3 +47,8 @@ class Photo(models.Model):
             # 새로운 파일 이름 생성
             self.decorated_image.name = f"{timezone.now().strftime('%Y%m%d_%H%M%S')}{ext}"
         super().save(*args, **kwargs)
+
+#이미지 공유
+class ImageShare(models.Model):
+    card_post = models.ForeignKey('CardPost', on_delete=models.CASCADE, related_name='shares', null = True)  # 카드와 연결
+    point = models.IntegerField("적립금", default = 100) # 포인트 100점 적립

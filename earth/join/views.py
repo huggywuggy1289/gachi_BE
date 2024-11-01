@@ -25,7 +25,7 @@ class TutorialView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-# 카드작성뷰, 튜토리얼 완료못한 사람은 무조건 튜토리얼 끝낸 후 작성가능
+# 카드작성뷰, 튜토리얼 완료못한 사람은 무조건 튜토리얼 끝낸 후 작성가능 /join/card_post/
 class CardPostView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -40,15 +40,20 @@ class CardPostView(APIView):
         if serializer.is_valid():
             card_post = serializer.save(author=request.user)  # 카드 포스트 저장
             card_post_id = card_post.id
+
+            # '이미지' URL 생성
+            image_url = request.build_absolute_uri(card_post.image.url)
+
             return Response({
                 "card_post_id" : card_post_id,
+                "image_url" : image_url, # 인스타그램 공유를 위한 이미지 URL
                 "message": "카드가 성공적으로 작성되었습니다.",
                 "redirect_url": "/join/frame_selection/"
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-# 프레임 선택 페이지 뷰
+# 프레임 선택 페이지 뷰 /join/frame_selection/
 class FrameSelection(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -76,7 +81,7 @@ class FrameSelection(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #----------------------실천카드 완성-----------------------
-# 이미지 저장단계
+# 이미지 저장단계 /join/completed/
 class CompletedView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -106,3 +111,32 @@ class CompletedView(APIView):
             request.user.save()  # 사용자 정보 저장
             return Response({"message": "이미지가 저장되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# Instagram 스토리 공유
+class ImageShareView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, image_id):
+        try:
+            card_post = CardPost.objects.get(id=image_id, author=request.user)
+            serializer = ImageShareSerializer(data=request.data)
+
+            # Instagram 스토리 링크 생성
+            image_url = request.build_absolute_uri(card_post.image.url)
+            instagram_share_url = f"https://www.instagram.com/stories/share?background={image_url}"
+            
+            if serializer.is_valid():
+                share = serializer.save(card_post=card_post)
+                # 포인트 지급 (공유 시에만)
+                request.user.points += share.point
+                request.user.save()
+
+                return Response({
+                    "message": "포인트 지급완료",
+                    "instagram_share_url": instagram_share_url  # 공유 링크 포함
+                }, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except CardPost.DoesNotExist:
+            return Response({"message": "해당 이미지가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
