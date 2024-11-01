@@ -121,7 +121,7 @@ class ImageShareView(APIView):
             card_post = CardPost.objects.get(id=image_id, author=request.user)
             serializer = ImageShareSerializer(data=request.data)
 
-            # Instagram 스토리 링크 생성
+            # Instagram 스토리 링크 생성 / 여기서 발급받은 포인트는 completed/에 쌓인다.
             image_url = request.build_absolute_uri(card_post.image.url)
             instagram_share_url = f"https://www.instagram.com/stories/share?background={image_url}"
             
