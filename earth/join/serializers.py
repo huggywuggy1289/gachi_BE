@@ -53,3 +53,10 @@ class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = ('decorated_image', 'card_post')
+
+# 이미지 공유 > 포인트 적립
+class ImageShareSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ImageShare
+        fields = ('card_post', 'point')
