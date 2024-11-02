@@ -10,6 +10,6 @@ urlpatterns = [
     path('card_post/', CardPostView.as_view(), name = 'card_post'),
     path('frame_selection/', FrameSelection.as_view(), name = 'frame_selection'),
     path('completed/', CompletedView.as_view(), name = 'completed'),
-    path('image_share/<int:image_id>/', ImageShareView.as_view(), name='image_share'),  # ImageShareView 추가
+    path('completed/<int:image_id>/', ImageShareView.as_view(), name='completed'),  # ImageShareView 추가
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
