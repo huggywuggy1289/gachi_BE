@@ -4,9 +4,9 @@ from users.models import User
 from django.utils import timezone
 # Create your models here.
 class UserProfile(models.Model):
-     user = models.OneToOneField(User, on_delete=models.CASCADE)
-     tutorial_completed = models.BooleanField(default=False)
-     has_card_completed = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    tutorial_completed = models.BooleanField(default=False)
+    has_card_completed = models.BooleanField(default=False)
 
 # 카드 작성(이미지 업로드, 키워드 선택, 사진 설명)
 class CardPost(models.Model):

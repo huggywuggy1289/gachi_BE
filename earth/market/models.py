@@ -1,4 +1,8 @@
 from django.db import models
+from users.models import User
+
+class Market(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 # 구매 아이템
 class Item(models.Model):
@@ -28,3 +32,14 @@ class Advertisement(models.Model):
 
     def __str__(self):
         return self.ad_title
+
+class Purchase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'item')  # 사용자와 품목의 조합은 유일해야 함
+
+    def __str__(self):
+        return f"{self.user.username} purchased {self.item.item_name}"

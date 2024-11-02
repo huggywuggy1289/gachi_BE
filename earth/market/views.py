@@ -4,51 +4,65 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from django.http import FileResponse # 파일 다운로드
+from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
+from users.models import User
 
 """
-할일
-- 사용자 포인트 보여주기
-- 포인트 차감 구현
-- 시리얼라이저에서 구매 전이면 "구매" 버튼 / 구매 후면 "다운"버튼으로 보이도록 구현
->>>>> model에서 button 필드 추가해서 하면 될 듯?
+광고와 아이템은 admin에서 등록하면 됨
+아이템의 note 필드는 admin에서 등록하지 않고 빈칸으로 두면 됨
 """
 
-# 여긴 나중에 삭제
-class ItemAPIView(APIView):
-    def get(self, request):
-        items = Item.objects.all()
-        item_serializer = ItemSerializer(items, many=True)
-        return Response(item_serializer.data, status=status.HTTP_200_OK)
-
-class AdvertisementAPIView(APIView):
-    def get(self, request):
-        advertisements = Advertisement.objects.all()
-        advertisement_serializer = AdvertisementSerializer(advertisements, many=True)
-        return Response(advertisement_serializer.data, status=status.HTTP_200_OK)
-#
-
-#이거 아이템 사진 이름 가격만 나오도록 바꿔야 함
+# 아이템 리스트
 class MarketAPIView(APIView):
+    permission_class = [IsAuthenticated]
+
     def get(self, request):
         items = Item.objects.all()
         advertisements = Advertisement.objects.all()
+        user = request.user
+
         item_serializer = ItemSerializer(items, many=True, context={'request': request})
         advertisement_serializer = AdvertisementSerializer(advertisements, many=True, context={'request': request})
+        user_point_serializer = UserPointsSerializer(user)
 
         return Response({
             "advertisement":advertisement_serializer.data,
-            "item": item_serializer.data
+            "item": item_serializer.data,
+            "points": user_point_serializer.data
             }, status=status.HTTP_200_OK)
 
 # 아이템 디테일
 class ItemDetailAPIView(APIView):
+    permission_class = [IsAuthenticated]
+
     def get(self, request, pk):
         items = get_object_or_404(Item, id=pk)
         item_serializer = ItemDetailSerializer(items, context={'request': request})
-        return Response(item_serializer.data, status=status.HTTP_200_OK)
+
+        user = request.user
+        user_point_serializer = UserPointsSerializer(user)
+        
+        # 구매 여부 확인
+        purchased = Purchase.objects.filter(user=user, item=items).exists()
+        
+        return Response({
+            "item": item_serializer.data,
+            "points": user_point_serializer.data,
+            "button_text": "다운받기" if purchased else "구매하기"
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, pk):
+        item = get_object_or_404(Item, id=pk)
+        serializer = PurchaseSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            serializer.save(item=item)  # 아이템을 시리얼라이저에 추가
+            return Response({"message": "구매가 완료되었습니다."}, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # 아이템 다운로드
 class ItemDownloadView(APIView):

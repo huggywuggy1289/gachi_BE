@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from .models import *
 from urllib.parse import urljoin
+from users.models import User
+
+# 사용자 포인트
+class UserPointsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "points")
 
 # 아이템 리스트
 class ItemSerializer(serializers.ModelSerializer):
@@ -54,3 +61,28 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     def get_ad_image(self, obj):
         request = self.context.get('request')
         return request.build_absolute_uri(obj.item_image.url)
+
+# 아이템 구매
+class PurchaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Purchase
+        fields = ['item']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        item = validated_data['item']
+
+        # 이미 구매한 품목인지 확인
+        if Purchase.objects.filter(user=user, item=item).exists():
+            raise serializers.ValidationError("이 품목은 이미 구매하였습니다.")
+        
+        # 사용자의 포인트 확인
+        if user.points < item.price:
+            raise serializers.ValidationError("포인트가 부족해서 상품을 구매할 수 없습니다.")
+
+        # 포인트 차감
+        user.points -= item.price
+        user.save()
+
+        purchase = Purchase.objects.create(user=user, **validated_data)
+        return purchase
