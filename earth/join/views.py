@@ -5,6 +5,8 @@ from .serializers import *
 from .models import *
 from rest_framework import status
 from django.shortcuts import redirect
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework import generics
 
 #튜토리얼 뷰
 class TutorialView(APIView):
@@ -140,3 +142,15 @@ class ImageShareView(APIView):
 
         except CardPost.DoesNotExist:
             return Response({"message": "해당 이미지가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+# 키워드 정렬 >> 데이터베이스에 저장된 CardPost 객체들을 목록 형태로 보여줌.
+class PostListAPIView(generics.ListAPIView):
+    serializer_class = CardPostSerializer
+
+    def get_queryset(self):
+        qs = CardPost.objects.all()
+        keyword = self.request.query_params.get('keyword', None)
+
+        if keyword:
+            qs = qs.filter(keyword=keyword) # 키워드 기준으로 필터링
+        return qs
