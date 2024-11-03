@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import *
 from .models import *
 from rest_framework import status
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import generics
 
@@ -61,17 +61,23 @@ class FrameSelection(APIView):
 
     # 유저가 프레임을 골랐는지 확인
     def get(self, request):
-        frame, created = Frame.objects.get_or_create(user=request.user)
+        cardpost_id = request.query_params.get("cardpost_id")  # cardpost_id를 쿼리 파라미터로 받아옴
+        cardpost = get_object_or_404(CardPost, id=cardpost_id)
+
+        frame, created = Frame.objects.get_or_create(user=request.user, cardpost=cardpost)
         serializer = FrameSerializer(frame)
         return Response(serializer.data)
     
     # 프레임 고르면
     def post(self, request):
-        frame, created = Frame.objects.get_or_create(user = request.user)
+        cardpost_id = request.data.get("cardpost_id")  # request body1
+        cardpost = get_object_or_404(CardPost, id=cardpost_id)
+
+        frame, created = Frame.objects.get_or_create(user = request.user, cardpost=cardpost)
         serializer = FrameSerializer(frame, data=request.data)
         
         # 프레임 선택 완료여부 판별
-        if not serializer.initial_data.get('frame_completed', False):
+        if not serializer.initial_data.get('frame_completed', False): # request body2
             return Response({"message": "프레임 선택해야 카드 작성이 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
         
         # 데이터 유효성 검사
