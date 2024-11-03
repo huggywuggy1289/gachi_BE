@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -34,8 +35,13 @@ class LoginView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data  # 토큰 받아오기
-        return Response({"token": token.key}, status=status.HTTP_200_OK)
+        
+        token = serializer.validated_data['token']  # 토큰 받아오기
+        user = serializer.validated_data['user']  # 사용자 정보 가져오기
+        return Response({
+            "token": token.key,
+            "last_login": user.last_login
+        }, status=status.HTTP_200_OK)
 
 # 로그아웃 뷰(post)
 class LogoutView(generics.GenericAPIView):
@@ -89,6 +95,13 @@ class ContactView(APIView):
     def get(self, request):
         return Response({"문의는 이곳으로 해주세요! : Instagram @joinusearth_24"})
 
-# 구매목록
+# 구매목록조회
+class OrderListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderListSerializer
+
+    def get_queryset(self):
+        # 현재 로그인한 사용자의 구매 내역을 반환
+        return Purchase.objects.filter(user=self.request.user)
 
 # 테마 변경

@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
 from rest_framework_simplejwt.tokens import RefreshToken
+
 # 활용할 필드목록
 # useranme: ID로 활용, required=True
 # email: required=True
@@ -11,6 +12,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class User(AbstractUser):
     userid = models.CharField(max_length=150, unique=True)
     points = models.IntegerField(default=0)  # 사용자 포인트 필드 추가
+    order_detail = models.ForeignKey(
+        'market.Purchase',
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='orders'
+    )  # 구매내역 조회 필드 추가
 
     @property
     def token(self):

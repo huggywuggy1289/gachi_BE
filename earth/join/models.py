@@ -30,6 +30,7 @@ class CardPost(models.Model):
 # 프레임 동적관리
 class Frame(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cardpost = models.ForeignKey(CardPost, on_delete=models.CASCADE, null=True)
     frame_completed = models.BooleanField(default=False)
 
 # 이미지 저장
@@ -48,7 +49,7 @@ class Photo(models.Model):
             self.decorated_image.name = f"{timezone.now().strftime('%Y%m%d_%H%M%S')}{ext}"
         super().save(*args, **kwargs)
 
-#이미지 공유
+#이미지 공유시 포인트 적립을 위함
 class ImageShare(models.Model):
     card_post = models.ForeignKey('CardPost', on_delete=models.CASCADE, related_name='shares', null = True)  # 카드와 연결
     point = models.IntegerField("적립금", default = 100) # 포인트 100점 적립

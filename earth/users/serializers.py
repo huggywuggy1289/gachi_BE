@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
+
+from market.models import Purchase
 logger = logging.getLogger(__name__)
 from rest_framework.authtoken.models import Token
 from django.conf import settings
@@ -14,6 +16,7 @@ from rest_framework.authtoken.models import Token # 토큰 모델
 from rest_framework.validators import UniqueValidator # 이메일 중복방지를 위한 검증 도구
 from django.core.validators import RegexValidator # 아이디 조건
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 # 회원가입 시리얼라이저
 class RegisterSerializer(serializers.ModelSerializer):
@@ -84,8 +87,12 @@ class LoginSerializer(serializers.Serializer):
         
         # 사용자 객체가 존재하면 authenticate 사용
         if user.check_password(data['password']):
-            token = Token.objects.get(user=user)
-            return token
+            # last_login 업데이트
+            user.last_login = timezone.now()
+            user.save()
+
+            token, created = Token.objects.get_or_create(user=user)
+            return {'token': token, 'user': user}
         raise serializers.ValidationError(
             {"error": "Unable to log in with provided credentials."}
         )
@@ -111,3 +118,10 @@ class UpdateSerializer(serializers.ModelSerializer):
         instance.set_password(password)  # 비밀번호 해시화
         instance.save()
         return instance
+
+# 구매내역 시리얼라이저
+class OrderListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Purchase
+        fields = ['item']
