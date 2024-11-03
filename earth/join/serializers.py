@@ -2,6 +2,7 @@ import base64
 from rest_framework import serializers
 from .models import *
 from rest_framework.exceptions import ValidationError
+from us.models import Us
 
 # https://tyoon9781.tistory.com/entry/django-rest-framework-1-serialization
 
@@ -31,6 +32,22 @@ class CardPostSerializer(serializers.ModelSerializer):
         
         else:
             return data
+
+    # 사용자의 레벨, 단계 업데이트
+    def create(self, validated_data):
+        card_post = super().create(validated_data)
+        
+        user = card_post.author
+        
+        # 사용자의 카드 수를 세고, 레벨과 단계 업데이트
+        us_instance, created = Us.objects.get_or_create(user=user)
+        us_instance.step += 1  # 카드가 하나 생성될 때마다 단계 증가
+        if us_instance.step % 5 == 0:  # 카드가 5개일 때마다 레벨 증가
+            us_instance.level += 1
+            us_instance.step = 1
+        us_instance.save()
+
+        return card_post
         
 # 프레임 시리얼라이저
 class FrameSerializer(serializers.ModelSerializer):

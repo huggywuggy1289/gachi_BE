@@ -41,6 +41,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('join/', include('join.urls')),
     path('market/', include('market.urls')),
+    path('us/', include('us.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
