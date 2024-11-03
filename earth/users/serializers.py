@@ -8,7 +8,7 @@ import jwt
 from .models import *
 from django.contrib.auth.password_validation import validate_password # 장고의 기본 패스워드 검증도구
 from django.contrib.auth import authenticate # user 인증함수. 자격증명 유효한 경우 User객체 반환
-
+from django.contrib.auth import get_user_model # userid로 로그인하기 위해
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token # 토큰 모델
 from rest_framework.validators import UniqueValidator # 이메일 중복방지를 위한 검증 도구
@@ -66,7 +66,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         # 각 유저 생성마다 토큰을 제작
         token = Token.objects.create(user=user)
         return user
-    
+
 # 로그인 시리얼라이저
 class LoginSerializer(serializers.Serializer):
     userid = serializers.CharField(required=True)
