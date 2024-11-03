@@ -35,8 +35,13 @@ class LoginView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data  # 토큰 받아오기
-        return Response({"token": token.key}, status=status.HTTP_200_OK)
+        
+        token = serializer.validated_data['token']  # 토큰 받아오기
+        user = serializer.validated_data['user']  # 사용자 정보 가져오기
+        return Response({
+            "token": token.key,
+            "last_login": user.last_login
+        }, status=status.HTTP_200_OK)
 
 # 로그아웃 뷰(post)
 class LogoutView(generics.GenericAPIView):
