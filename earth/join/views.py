@@ -125,7 +125,8 @@ class ImageShareView(APIView):
 
             # Instagram 스토리 링크 생성 / 여기서 발급받은 포인트는 completed/에 쌓인다.
             image_url = request.build_absolute_uri(card_post.image.url)
-            instagram_share_url = f"https://www.instagram.com/stories/share?background={image_url}"
+            # 인스타그램 스토리 URL 스킴 생성 (Android용 intent URL) *iOS의 경우, instagram://story 스킴을 사용
+            instagram_share_url = f"https://www.instagram.com/create/story?background_image_url={image_url}"
             
             if serializer.is_valid():
                 share = serializer.save(card_post=card_post)

@@ -9,5 +9,6 @@ urlpatterns = [
     path('profile/<int:pk>/', ProfileView.as_view()),
     path('profile/update/', UpdateProfileView.as_view(), name='update-profile'),
     path('delete/', UserDeleteAPIView.as_view(), name='user-delete'),
-    path('contact/', ContactView.as_view(), name = 'contact')
+    path('contact/', ContactView.as_view(), name = 'contact'),
+    path('order_detail/', OrderListView.as_view(), name = 'order_detail'),
 ]
