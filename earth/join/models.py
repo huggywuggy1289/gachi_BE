@@ -18,7 +18,7 @@ class CardPost(models.Model):
         ('OTHER', '기타'),
     ]
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cardposts')
     image = models.ImageField(upload_to='card/', blank=False)
     explanation = models.TextField(max_length=500)
     keyword = models.CharField(max_length=20, choices=KEYWORD_CHOICES)

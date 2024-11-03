@@ -34,7 +34,7 @@ class Advertisement(models.Model):
         return self.ad_title
 
 class Purchase(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchases')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     purchase_date = models.DateTimeField(auto_now_add=True)
 
