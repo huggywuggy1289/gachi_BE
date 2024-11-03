@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -89,6 +90,13 @@ class ContactView(APIView):
     def get(self, request):
         return Response({"문의는 이곳으로 해주세요! : Instagram @joinusearth_24"})
 
-# 구매목록
+# 구매목록조회
+class OrderListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderListSerializer
+
+    def get_queryset(self):
+        # 현재 로그인한 사용자의 구매 내역을 반환
+        return Purchase.objects.filter(user=self.request.user)
 
 # 테마 변경

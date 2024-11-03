@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
+
+from market.models import Purchase
 logger = logging.getLogger(__name__)
 from rest_framework.authtoken.models import Token
 from django.conf import settings
@@ -111,3 +113,10 @@ class UpdateSerializer(serializers.ModelSerializer):
         instance.set_password(password)  # 비밀번호 해시화
         instance.save()
         return instance
+
+# 구매내역 시리얼라이저
+class OrderListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Purchase
+        fields = ['item']
