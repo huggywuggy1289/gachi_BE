@@ -29,7 +29,7 @@ class Us(models.Model):
 
         time_since_last_downgrade = timezone.now() - self.last_level_downgrade
 
-        # 기준 시간을 5분으로 설정 (테스트용) minutes=5
+        # 테스트용은 5분으로 설정 minutes=5
         if time_since_last_downgrade >= timedelta(days=7):
             # 레벨 하락
             new_level = max(0, int(self.level * 0.5))  # 레벨이 0 미만으로 떨어지지 않도록
