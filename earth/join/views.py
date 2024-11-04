@@ -150,12 +150,14 @@ class ImageShareView(APIView):
         except CardPost.DoesNotExist:
             return Response({"message": "해당 이미지가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-# 키워드 정렬 >> 데이터베이스에 저장된 CardPost 객체들을 목록 형태로 보여줌.
+# 키워드 정렬 >> 데이터베이스에 저장된 CardPost 객체들을 목록 형태로 보여줌. *인증된 사용자만 조회가능*
 class PostListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CardPostSerializer
 
     def get_queryset(self):
-        qs = CardPost.objects.all()
+        user = self.request.user
+        qs = CardPost.objects.filter(author=user)
         keyword = self.request.query_params.get('keyword', None)
 
         if keyword:
