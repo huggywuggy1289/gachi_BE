@@ -34,6 +34,8 @@ class UsAPIView(APIView):
         # 상위 3등 사용자 가져오기
         top_users = all_users[:3]
         top_users_data = UsSerializer(top_users, many=True).data
+
+        # 현재 테마
         user_theme, created = UserTheme.objects.get_or_create(user=request.user)
 
         return Response({
