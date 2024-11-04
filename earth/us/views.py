@@ -35,7 +35,7 @@ class UsAPIView(APIView):
         top_users = all_users[:3]
         top_users_data = UsSerializer(top_users, many=True).data
 
-        # 현재 테마
+        # 현재 테마 정보
         user_theme, created = UserTheme.objects.get_or_create(user=request.user)
 
         return Response({
