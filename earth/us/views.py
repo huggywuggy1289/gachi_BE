@@ -7,12 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
-from users.models import User
-
-"""
-- 선택한 테마
-- 레벨이 0이면 하락하지 않음
-"""
+from users.models import User,UserTheme
 
 class UsAPIView(APIView):
     permission_class = [IsAuthenticated]
@@ -40,7 +35,11 @@ class UsAPIView(APIView):
         top_users = all_users[:3]
         top_users_data = UsSerializer(top_users, many=True).data
 
+        # 현재 테마 정보
+        user_theme, created = UserTheme.objects.get_or_create(user=request.user)
+
         return Response({
+            "current_theme": user_theme.selected_theme,
             "my": serializer.data,
             "my_rank": user_rank,
             "level_downgrade": level_downgraded,
