@@ -11,4 +11,5 @@ urlpatterns = [
     path('delete/', UserDeleteAPIView.as_view(), name='user-delete'),
     path('contact/', ContactView.as_view(), name = 'contact'),
     path('order_detail/', OrderListView.as_view(), name = 'order_detail'),
+    path('my_theme/', UserThemeView.as_view(), name='my_theme'),
 ]

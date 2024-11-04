@@ -5,6 +5,7 @@ from rest_framework.generics import ListAPIView
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .permissions import CustomReadOnly
@@ -15,6 +16,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView
 from .renderers import UserJSONRenderer
 from .forms import *
+from market.models import Item, Purchase
+
 # 토큰 발급받도록 뷰 변경
 # 회원가입
 class RegisterView(generics.CreateAPIView):
@@ -104,4 +107,30 @@ class OrderListView(ListAPIView):
         # 현재 로그인한 사용자의 구매 내역을 반환
         return Purchase.objects.filter(user=self.request.user)
 
-# 테마 변경
+
+# 테마 조회, 변경
+class UserThemeView(APIView):
+    def get(self, request):
+        user_theme, created = UserTheme.objects.get_or_create(user=request.user)
+        
+        # 사용자가 구매한 테마 목록 조회
+        purchased_items = Purchase.objects.filter(user=request.user)
+        purchased_themes = [purchase.item.item_name for purchase in purchased_items if purchase.item.item_type == 'theme']
+
+        themes = [{"theme_name": "기본 테마", "is_selected": user_theme.selected_theme == "기본 테마"}]
+        
+        # 구매한 테마가 있을 경우 추가
+        for theme_name in purchased_themes:
+            themes.append({"theme_name": theme_name, "is_selected": user_theme.selected_theme == theme_name})
+
+        return Response(themes, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        user_theme, created = UserTheme.objects.get_or_create(user=request.user)
+        selected_theme = request.data.get("selected_theme")
+
+        # 선택된 테마 업데이트
+        user_theme.selected_theme = selected_theme
+        user_theme.save()
+
+        return Response({"message": "테마가 변경되었습니다."}, status=status.HTTP_200_OK)

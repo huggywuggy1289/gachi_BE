@@ -16,6 +16,7 @@ class User(AbstractUser):
         'market.Purchase',
         on_delete=models.CASCADE,
         null=True,
+        blank=True,
         related_name='orders'
     )  # 구매내역 조회 필드 추가
 
@@ -24,7 +25,7 @@ class User(AbstractUser):
         refresh = RefreshToken.for_user(self)
         return str(refresh.access_token)
 
-# user확장
+# User 확장
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
@@ -33,3 +34,12 @@ class Profile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
+        #UserTheme.objects.create(user=instance)
+
+# 테마
+class UserTheme(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    selected_theme = models.CharField(max_length=50, default='기본 테마')
+
+    def __str__(self):
+        return f"{self.user.username}'s Theme"

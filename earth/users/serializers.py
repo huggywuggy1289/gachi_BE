@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 
-from market.models import Purchase
+from market.models import Purchase, Item
 logger = logging.getLogger(__name__)
 from rest_framework.authtoken.models import Token
 from django.conf import settings
@@ -121,7 +121,22 @@ class UpdateSerializer(serializers.ModelSerializer):
 
 # 구매내역 시리얼라이저
 class OrderListSerializer(serializers.ModelSerializer):
-    
+    item_name = serializers.CharField(source='item.item_name')
+    item_image = serializers.ImageField(source='item.item_image')
+    price = serializers.IntegerField(source='item.price')
+
     class Meta:
         model = Purchase
-        fields = ['item']
+        fields = ['item', 'item_name', 'item_image', 'price']
+
+# 테마 변경 시리얼라이저
+class ThemeSerializer(serializers.Serializer):
+    theme_name = serializers.CharField()
+    is_selected = serializers.BooleanField()
+
+class UserThemeSerializer(serializers.ModelSerializer):
+    themes = ThemeSerializer(many=True)
+
+    class Meta:
+        model = UserTheme
+        fields = ['themes']

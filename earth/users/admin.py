@@ -20,4 +20,3 @@ admin.site.register(User) # 대신 직접설정한 클래스를 등록
 admin.site.register(Profile)
 # >> 이과정에서 ProfileInline이 포함된 새로운 사용자관리페이지 사용가능
 
-
