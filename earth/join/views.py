@@ -158,8 +158,14 @@ class PostListAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         qs = CardPost.objects.filter(author=user)
-        keyword = self.request.query_params.get('keyword', None)
 
-        if keyword:
-            qs = qs.filter(keyword=keyword) # 키워드 기준으로 필터링
+        # URL 경로 파라미터로 전달된 category_id 받아오기
+        category_id = self.kwargs.get('category_id', None)
+
+        if category_id is not None:
+            try:
+                selected_keyword = CardPost.KEYWORD_CHOICES[category_id][0]
+                qs = qs.filter(keyword=selected_keyword) # 키워드 기준으로 필터링
+            except IndexError:
+                qs = CardPost.objects.none()
         return qs
