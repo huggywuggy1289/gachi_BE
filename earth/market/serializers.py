@@ -52,16 +52,6 @@ class ItemDetailSerializer(serializers.ModelSerializer):
         else:  # "frame"
             return "*자동으로 프레임이 추가됩니다."
 
-# 광고 배너
-class AdvertisementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Advertisement
-        fields = ("ad_title", "ad_image", "ad_link")
-
-    def get_ad_image(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.item_image.url)
-
 # 아이템 구매
 class PurchaseSerializer(serializers.ModelSerializer):
     class Meta:

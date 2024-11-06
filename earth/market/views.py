@@ -21,15 +21,12 @@ class MarketAPIView(APIView):
 
     def get(self, request):
         items = Item.objects.all()
-        advertisements = Advertisement.objects.all()
         user = request.user
 
         item_serializer = ItemSerializer(items, many=True, context={'request': request})
-        advertisement_serializer = AdvertisementSerializer(advertisements, many=True, context={'request': request})
         user_point_serializer = UserPointsSerializer(user)
 
         return Response({
-            "advertisement":advertisement_serializer.data,
             "item": item_serializer.data,
             "points": user_point_serializer.data
             }, status=status.HTTP_200_OK)
@@ -80,6 +77,6 @@ class ItemDownloadView(APIView):
 
             return response
         except Item.DoesNotExist:
-            return Response({"error": "Item not found"}, status=404)
+            return Response({"error": "아이템을 찾을 수 없습니다."}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
