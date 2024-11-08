@@ -110,6 +110,8 @@ class OrderListView(ListAPIView):
 
 # 테마 조회, 변경
 class UserThemeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user_theme, created = UserTheme.objects.get_or_create(user=request.user)
         
@@ -129,8 +131,14 @@ class UserThemeView(APIView):
         user_theme, created = UserTheme.objects.get_or_create(user=request.user)
         selected_theme = request.data.get("selected_theme")
 
-        # 선택된 테마 업데이트
-        user_theme.selected_theme = selected_theme
-        user_theme.save()
+        purchased_items = Purchase.objects.filter(user=request.user)
+        purchased_themes = [purchase.item.item_name for purchase in purchased_items if purchase.item.item_type == 'theme']
 
-        return Response({"message": "테마가 변경되었습니다."}, status=status.HTTP_200_OK)
+        # 선택된 테마 업데이트
+        if selected_theme in purchased_themes:
+            user_theme.selected_theme = selected_theme
+            user_theme.save()
+
+            return Response({"message": "테마가 변경되었습니다."}, status=status.HTTP_200_OK)
+
+        return Response({"message": "테마를 구매 후 변경해주세요."}, status=status.HTTP_400_BAD_REQUEST)

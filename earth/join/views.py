@@ -101,23 +101,29 @@ class CompletedView(APIView):
         points = request.user.points
         return Response({"points":points,"message": "완성된 이미지가 저장되었습니다..", "images": serializer.data})
     
-    # 이미지 저장하는 메서드 추가
+    # 이미지 저장 메서드
     def post(self, request):
         card_post_id = request.data.get('card_post_id')
         if not card_post_id:
             return Response({"message": "card_post_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             card_post = CardPost.objects.get(id=card_post_id, author=request.user)
         except CardPost.DoesNotExist:
             return Response({"message": "해당 카드 포스트가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-        # 이미지 저장
+        # `decorated_image` 필드를 통해 이미지 저장
         serializer = PhotoSerializer(data=request.data)
         if serializer.is_valid():
             photo = serializer.save(card_post=card_post)
-            request.user.points += photo.point # 포인트 적립
-            request.user.save()  # 사용자 정보 저장
-            return Response({"message": "이미지가 저장되었습니다."}, status=status.HTTP_201_CREATED)
+            # 포인트 추가 및 저장
+            request.user.points += photo.point
+            request.user.save()
+            return Response({
+                "message": "이미지가 저장되었습니다.",
+                "image_url": photo.decorated_image.url  # S3 URL 반환
+            }, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 # Instagram 스토리 공유
