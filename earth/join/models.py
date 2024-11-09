@@ -23,6 +23,7 @@ class CardPost(models.Model):
     explanation = models.TextField(max_length=500)
     keyword = models.CharField(max_length=20, choices=KEYWORD_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_finalized = models.BooleanField(default=False) # 프레임까지 완전적용되어야 조회가능
 
     def __str__(self):
         return f"{self.author.username} - {self.keyword}"
@@ -53,3 +54,25 @@ class Photo(models.Model):
 class ImageShare(models.Model):
     card_post = models.ForeignKey('CardPost', on_delete=models.CASCADE, related_name='shares', null = True)  # 카드와 연결
     point = models.IntegerField("적립금", default = 100) # 포인트 100점 적립
+
+# 카드 작성시 뜨는 월별 토글을 위해 카테고리로 설정
+class Category(models.Model):
+    MONTH_CHOICES = [
+        ('1', 'January'),
+        ('2', 'February'),
+        ('3', 'March'),
+        ('4', 'April'),
+        ('5', 'May'),
+        ('6', 'June'),
+        ('7', 'July'),
+        ('8', 'August'),
+        ('9', 'September'),
+        ('10', 'October'),
+        ('11', 'November'),
+        ('12', 'December'),
+    ]
+
+    name = models.CharField(max_length=2, choices=MONTH_CHOICES, unique=True)  # 월별 선택지로 설정
+
+    def __str__(self):
+        return dict(self.MONTH_CHOICES).get(self.name, "Unknown")

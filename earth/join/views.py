@@ -83,6 +83,11 @@ class FrameSelection(APIView):
         # 데이터 유효성 검사
         if serializer.is_valid():
             serializer.save()
+
+            # 프레임 선택이 완료되었을 때 CardPost를 실전 카드로 업데이트
+            cardpost.is_finalized = True
+            cardpost.save()
+
             return Response({
                 "message": "프레임 잘 골랐습니다.",
                 "redirect_url": "/join/completed/"
@@ -163,15 +168,50 @@ class PostListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        qs = CardPost.objects.filter(author=user)
+        queryset = CardPost.objects.filter(author=user)
 
-        # URL 경로 파라미터로 전달된 category_id 받아오기
-        category_id = self.kwargs.get('category_id', None)
+        # 쿼리 파라미터로 전달된 월(monthly) 받기
+        monthly = self.request.query_params.get("monthly")
+        if monthly and monthly.isdigit():
+            monthly = int(monthly)
+            year = timezone.now().year
+            queryset = queryset.filter(created_at__year=year, created_at__month=monthly)
+        else:
+            queryset = CardPost.objects.none()  # 잘못된 월인 경우 빈 쿼리셋 반환
 
+        # 키워드 필터링
+        category_id = self.request.query_params.get("category_id")
         if category_id is not None:
             try:
-                selected_keyword = CardPost.KEYWORD_CHOICES[category_id][0]
-                qs = qs.filter(keyword=selected_keyword) # 키워드 기준으로 필터링
+                selected_keyword = CardPost.KEYWORD_CHOICES[int(category_id)][0]
+                queryset = queryset.filter(keyword=selected_keyword)
             except IndexError:
-                qs = CardPost.objects.none()
-        return qs
+                queryset = CardPost.objects.none()
+
+        return queryset
+ 
+# 조인페이지에 토글반환('')
+class JoinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user  # 현재 로그인한 사용자
+
+        # 실전 카드를 작성한 월만 추출
+        months_with_posts = CardPost.objects.filter(
+            author=user,
+            is_finalized=True,  # 실전 카드만 조회
+        ).values_list('created_at__month', flat=True).distinct()
+
+        # 월별로 리다이렉션을 위한 링크 생성 (작성된 월만 포함)
+        month_links = []
+        for month in months_with_posts:
+            month_links.append({
+                "month": str(month),  # 월을 문자열로 변환
+                "url": f"/join/list/?monthly={month}",  # 월별 카드 리스트 URL 생성
+            })
+
+        # 월별 카드 작성 링크 반환
+        return Response({
+            "month_links": month_links
+        })
