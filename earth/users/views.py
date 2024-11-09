@@ -66,7 +66,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
 # 회원정보 수정 뷰
-class UpdateProfileView(generics.UpdateAPIView):
+class UpdateProfileView(generics.RetrieveAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]
 

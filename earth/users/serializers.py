@@ -112,10 +112,7 @@ class UpdateSerializer(serializers.ModelSerializer):
         fields = ['username', 'password']
 
     def update(self, instance, validated_data):
-        # 비밀번호 업데이트
-        password = validated_data.pop('password')
         instance.username = validated_data.get('username', instance.username)
-        instance.set_password(password)  # 비밀번호 해시화
         instance.save()
         return instance
 
