@@ -17,6 +17,7 @@ Including another URLconf
 # 미디어 파일경로를 프로젝트 url에 매칭시키기 위한 import 모듈
 from django.conf import settings
 from django.conf.urls.static import static
+from . import views
 
 from django.contrib import admin
 from django.urls import include, path, re_path
@@ -42,6 +43,7 @@ urlpatterns = [
     path('join/', include('join.urls')),
     path('market/', include('market.urls')),
     path('us/', include('us.urls')),
+    path('health/', views.health_check, name='health_check'), # 추가
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [

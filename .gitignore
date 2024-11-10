@@ -313,3 +313,9 @@ $RECYCLE.BIN/
 .myvenv
 myvenv
 myvenv
+
+#SECRET_KEY
+SECRET_KEY = 'django-insecure-8@msgdn(%fl$uu9dxi*k305-h+(ps#wqm0o9c@6)ff%4k%q#c-'
+
+#.env
+.env
