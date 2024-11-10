@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 
-secret_file_path = os.getenv('SECRET_KEY_FILE', '/earth/secret_key.json')
+secret_file_path = os.getenv('SECRET_KEY_FILE', './secret_key.json')
 
 with open(secret_file_path) as secret_file:
     secrets = json.load(secret_file)
