@@ -72,6 +72,12 @@ class FrameSelection(APIView):
 
         # Frame 객체 가져오기 또는 생성
         frame, created = Frame.objects.get_or_create(user=request.user, cardpost=cardpost)
+        
+        # frame이 새로 생성되었다면 필드를 true로 변환
+        if created:
+            cardpost.is_finalized = True
+            cardpost.save()
+        
         serializer = FrameSerializer(frame)
 
         # 유저가 구매한 프레임 목록 확인
