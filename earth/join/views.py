@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from market.models import Purchase
 from .serializers import *
 from .models import *
 from rest_framework import status
@@ -59,40 +61,50 @@ class CardPostView(APIView):
 class FrameSelection(APIView):
     permission_classes = [IsAuthenticated]
 
-    # 유저가 프레임을 골랐는지 확인
+    # 유저가 프레임을 골랐는지 확인(+프레임 형태 반환)
     def get(self, request):
         cardpost_id = request.query_params.get("cardpost_id")  # cardpost_id를 쿼리 파라미터로 받아옴
         cardpost = get_object_or_404(CardPost, id=cardpost_id)
-
         frame, created = Frame.objects.get_or_create(user=request.user, cardpost=cardpost)
         serializer = FrameSerializer(frame)
-        return Response(serializer.data)
+
+        purchased_items = Purchase.objects.filter(user=request.user)
+        purchased_frames = [purchase.item.item_name for purchase in purchased_items if purchase.item.item_type == 'frame']
+
+        frames = [{"frame_name": frame_name} for frame_name in purchased_frames]
+
+        response_data = {
+            "frame": serializer.data,
+            "purchased_frames": frames
+        }
+
+        return Response(response_data)
     
-    # 프레임 고르면
-    def post(self, request):
-        cardpost_id = request.data.get("cardpost_id")  # request body1
-        cardpost = get_object_or_404(CardPost, id=cardpost_id)
+    # # 프레임 고르면
+    # def post(self, request):
+    #     cardpost_id = request.data.get("cardpost_id")  # request body1
+    #     cardpost = get_object_or_404(CardPost, id=cardpost_id)
 
-        frame, created = Frame.objects.get_or_create(user = request.user, cardpost=cardpost)
-        serializer = FrameSerializer(frame, data=request.data)
+    #     frame, created = Frame.objects.get_or_create(user = request.user, cardpost=cardpost)
+    #     serializer = FrameSerializer(frame, data=request.data)
         
-        # 프레임 선택 완료여부 판별
-        if not serializer.initial_data.get('frame_completed', False): # request body2
-            return Response({"message": "프레임 선택해야 카드 작성이 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
+    #     # 프레임 선택 완료여부 판별
+    #     if not serializer.initial_data.get('frame_completed', False): # request body2
+    #         return Response({"message": "프레임 선택해야 카드 작성이 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
         
-        # 데이터 유효성 검사
-        if serializer.is_valid():
-            serializer.save()
+    #     # 데이터 유효성 검사
+    #     if serializer.is_valid():
+    #         serializer.save()
 
-            # 프레임 선택이 완료되었을 때 CardPost를 실전 카드로 업데이트
-            cardpost.is_finalized = True
-            cardpost.save()
+    #         # 프레임 선택이 완료되었을 때 CardPost를 실전 카드로 업데이트
+    #         cardpost.is_finalized = True
+    #         cardpost.save()
 
-            return Response({
-                "message": "프레임 잘 골랐습니다.",
-                "redirect_url": "/join/completed/"
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         return Response({
+    #             "message": "프레임 잘 골랐습니다.",
+    #             "redirect_url": "/join/completed/"
+    #         }, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #----------------------실천카드 완성-----------------------
 # 이미지 저장단계 /join/completed/
 class CompletedView(APIView):

@@ -51,11 +51,10 @@ class CardPostSerializer(serializers.ModelSerializer):
         
 # 프레임 시리얼라이저
 class FrameSerializer(serializers.ModelSerializer):
-    frame_completed = serializers.BooleanField(required = False)
 
     class Meta:
         model = Frame
-        fields = ['cardpost', 'frame_completed']
+        fields = ['cardpost']
         extra_kwargs = {'cardpost': {'read_only': True}}  # user 필드는 자동으로 설정
 
 # 이미지 저장 시리얼라이저
