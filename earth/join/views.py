@@ -61,24 +61,32 @@ class CardPostView(APIView):
 class FrameSelection(APIView):
     permission_classes = [IsAuthenticated]
 
-    # 유저가 프레임을 골랐는지 확인(+프레임 형태 반환)
+    # 유저가 프레임을 골랐는지 확인(+프레임 형태 반환 및 카드 상태 확인)
     def get(self, request):
         cardpost_id = request.query_params.get("cardpost_id")  # cardpost_id를 쿼리 파라미터로 받아옴
+        if not cardpost_id:
+            return Response({"message": "cardpost_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # CardPost 객체 확인
         cardpost = get_object_or_404(CardPost, id=cardpost_id)
+
+        # Frame 객체 가져오기 또는 생성
         frame, created = Frame.objects.get_or_create(user=request.user, cardpost=cardpost)
         serializer = FrameSerializer(frame)
 
+        # 유저가 구매한 프레임 목록 확인
         purchased_items = Purchase.objects.filter(user=request.user)
         purchased_frames = [purchase.item.item_name for purchase in purchased_items if purchase.item.item_type == 'frame']
 
-        frames = [{"frame_name": frame_name} for frame_name in purchased_frames]
-
+        # 프레임 목록과 카드 상태를 포함한 응답 데이터 구성
         response_data = {
-            "frame": serializer.data,
-            "purchased_frames": frames
+            "frame": serializer.data,  # 선택된 프레임 정보
+            "purchased_frames": [{"frame_name": frame_name} for frame_name in purchased_frames],  # 구매한 프레임 목록
+            "is_finalized": cardpost.is_finalized  # 카드의 완료 상태
         }
 
-        return Response(response_data)
+        return Response(response_data, status=status.HTTP_200_OK)
+
     
     # # 프레임 고르면
     # def post(self, request):
