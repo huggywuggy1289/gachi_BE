@@ -167,27 +167,60 @@ class ImageShareView(APIView):
             card_post = CardPost.objects.get(id=image_id, author=request.user)
             serializer = ImageShareSerializer(data=request.data)
 
-            # Instagram 스토리 링크 생성 / 여기서 발급받은 포인트는 completed/에 쌓인다.
-            image_url = request.build_absolute_uri(card_post.image.url)
-            # 인스타그램 스토리 URL 스킴 생성 (Android용 intent URL) *iOS의 경우, instagram://story 스킴을 사용
-            instagram_share_url = f"https://www.instagram.com/create/story?background_image_url={image_url}"
-            
+            # 인스타그램 앱으로 넘어가는 URL (앱이 설치된 경우)
+            instagram_app_url = f"instagram://story?background_image_url={image_id}"
+
+            # 웹에서 사용할 인스타그램 URL
+            instagram_web_url = f"https://www.instagram.com/create/story?background_image_url={image_id}"
+
             if serializer.is_valid():
                 share = serializer.save(card_post=card_post)
                 # 포인트 지급 (공유 시에만)
                 request.user.points += share.point
                 request.user.save()
 
+                # 모바일 장치에서 Instagram 앱이 설치되어 있는지 체크하고 링크 반환
                 return Response({
                     "message": "포인트 지급완료",
-                    "instagram_share_url": instagram_share_url  # 공유 링크 포함
+                    "instagram_share_url": instagram_app_url,  # 앱 URL 반환
+                    "fallback_web_url": instagram_web_url  # 앱이 없는 경우 웹 URL 반환
                 }, status=status.HTTP_201_CREATED)
             
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except CardPost.DoesNotExist:
             return Response({"message": "해당 이미지가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+# Instagram 스토리 공유
+# class ImageShareView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, image_id):
+#         try:
+#             card_post = CardPost.objects.get(id=image_id, author=request.user)
+#             serializer = ImageShareSerializer(data=request.data)
+
+#             # Instagram 스토리 링크 생성 / 여기서 발급받은 포인트는 completed/에 쌓인다.
+#             image_url = request.build_absolute_uri(card_post.image.url)
+#             # 인스타그램 스토리 URL 스킴 생성 (Android용 intent URL) *iOS의 경우, instagram://story 스킴을 사용
+#             instagram_share_url = f"https://www.instagram.com/create/story?background_image_url={image_url}"
+            
+#             if serializer.is_valid():
+#                 share = serializer.save(card_post=card_post)
+#                 # 포인트 지급 (공유 시에만)
+#                 request.user.points += share.point
+#                 request.user.save()
+
+#                 return Response({
+#                     "message": "포인트 지급완료",
+#                     "instagram_share_url": instagram_share_url  # 공유 링크 포함
+#                 }, status=status.HTTP_201_CREATED)
+            
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         except CardPost.DoesNotExist:
+#             return Response({"message": "해당 이미지가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 # 키워드 정렬 >> 데이터베이스에 저장된 CardPost 객체들을 목록 형태로 보여줌. *인증된 사용자만 조회가능*
 class PostListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -234,7 +267,7 @@ class PostListAPIView(generics.ListAPIView):
             "images": image_urls  # 이미지 URL 목록 반환
         })
 
- 
+
 # 조인페이지에 토글반환('')
 class JoinView(APIView):
     permission_classes = [IsAuthenticated]
