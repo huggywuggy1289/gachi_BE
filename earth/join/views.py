@@ -1,3 +1,4 @@
+from django.http import FileResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +11,8 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import generics
 from market.models import Purchase
+from django.core.files.storage import default_storage
+from django.http import JsonResponse
 
 #튜토리얼 뷰
 class TutorialView(APIView):
@@ -293,3 +296,44 @@ class JoinView(APIView):
         return Response({
             "month_links": month_links
         })
+
+# test
+import logging
+
+class ImageDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            photo = Photo.objects.get(pk=pk, card_post__author=request.user)
+
+            # pk값 확인
+            debug_data = {
+                "photos_count": Photo.objects.filter(card_post__author=request.user).count(),
+                "user_photos": list(
+                    Photo.objects.filter(card_post__author=request.user).values("id", "card_post__id")
+                ),
+            }
+            
+            # 디버그 정보 로그 출력
+            logging.debug("Debug Data: %s", debug_data)
+            
+            file_name = photo.decorated_image.name  # 파일 이름
+            file_url = photo.decorated_image.url  # S3의 URL
+            
+            # S3 URL에서 파일을 가져오기
+            response = FileResponse(default_storage.open(file_name, 'rb'), as_attachment=True, filename=file_name)
+
+            # 이미지의 확장자에 따라 Content-Type 설정
+            if file_name.endswith('.png'):
+                response['Content-Type'] = 'image/png'
+            else:
+                response['Content-Type'] = 'image/jpeg'
+
+            return response
+        
+        except Photo.DoesNotExist:
+            return Response({"error": "이미지를 찾을 수 없습니다."}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+

@@ -12,5 +12,7 @@ urlpatterns = [
     path('frame_selection/', FrameSelection.as_view(), name = 'frame_selection'),
     path('completed/', CompletedView.as_view(), name = 'completed'),
     path('completed/<int:image_id>/', ImageShareView.as_view(), name='completed'),  # ImageShareView 추가
+    #+
+    path('imagedownload/<int:pk>/', ImageDownloadView.as_view(), name='download'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
