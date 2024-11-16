@@ -21,6 +21,10 @@ class CardPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = CardPost
         fields = ["image", "explanation", "keyword"]
+    
+    def get_image(self, obj):
+        # S3의 기본 경로(card/)를 join/ 경로로 변경
+        return obj.image.url.replace("/card/", "/join/")
 
     def validate(self, data):
         if not data.get("image"):
