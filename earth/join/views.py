@@ -9,6 +9,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import generics
+from market.models import Purchase
 
 #튜토리얼 뷰
 class TutorialView(APIView):
@@ -218,22 +219,21 @@ class PostListAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
 
-        # 이미지 저장 API와 동일한 URL 반환
+        # 관련된 이미지 URL 가져오기
         photos = Photo.objects.filter(card_post__in=queryset)
         image_urls = [
             {
-                "card_post_id": photo.card_post.id,
                 "image_url": request.build_absolute_uri(photo.decorated_image.url)
             }
             for photo in photos if photo.decorated_image
         ]
 
+        # 이미지 URL만 반환
         return Response({
-            "card_posts": serializer.data,
-            "images": image_urls  # 저장된 이미지 URL 반환
+            "images": image_urls  # 이미지 URL 목록 반환
         })
+
  
 # 조인페이지에 토글반환('')
 class JoinView(APIView):
