@@ -38,16 +38,22 @@ class Frame(models.Model):
 class Photo(models.Model):
     card_post = models.ForeignKey(CardPost, on_delete=models.CASCADE, related_name='decorated_images', null=True, blank=True)
     decorated_image = models.ImageField(upload_to = 'join/')# 꾸민 이미지 저장 경로 설정
-    update_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField()
     point = models.IntegerField("적립금", default = 50) # 포인트 50점 적립
 
     # 현재 날짜로 저장되도록 수정
     def save(self, *args, **kwargs):
+        # decorated_image가 있을 경우 파일 이름 변경
         if self.decorated_image:
             # 파일 확장자 추출
             ext = os.path.splitext(self.decorated_image.name)[1]
             # 새로운 파일 이름 생성
             self.decorated_image.name = f"{timezone.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+
+        # update_time이 비어 있으면 현재 시간으로 설정
+        if not self.update_time:
+            self.update_time = timezone.now()
+
         super().save(*args, **kwargs)
 
 #이미지 공유시 포인트 적립을 위함
