@@ -32,7 +32,6 @@ class CardPost(models.Model):
 class Frame(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cardpost = models.ForeignKey(CardPost, on_delete=models.CASCADE, null=True)
-    # frame_completed = models.BooleanField(default=False)
 
 # 이미지 저장
 class Photo(models.Model):

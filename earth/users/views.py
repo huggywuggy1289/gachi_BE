@@ -17,6 +17,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from .renderers import UserJSONRenderer
 from .forms import *
 from market.models import Item, Purchase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # 토큰 발급받도록 뷰 변경
 # 회원가입
@@ -25,11 +26,25 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        user = User.objects.get(username=request.data['username'])
-        refresh = RefreshToken.for_user(user)
-        response.data['token'] = str(refresh.access_token)
-        return response
+        serializer = self.get_serializer(data=request.data)
+        
+        # 유효성 검사
+        if serializer.is_valid():
+            # 사용자 생성
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "userid": user.userid,
+                "username": user.username,
+                "token": str(refresh.access_token),
+                "message": "회원가입이 완료되었습니다."
+            }, status=status.HTTP_201_CREATED)
+
+        # 유효성 검사 실패 시 200 응답으로 오류 메시지 반환
+        return Response({
+            "errors": serializer.errors,
+            "message": "회원가입에 실패했습니다."
+        }, status=status.HTTP_200_OK)
 
 # 로그인 뷰
 class LoginView(generics.GenericAPIView):
@@ -37,8 +52,14 @@ class LoginView(generics.GenericAPIView):
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
+
+        # 유효성 검사
+        if not serializer.is_valid():
+            return Response({
+                "errors": serializer.errors,
+                "message": "로그인에 실패했습니다."
+            }, status=status.HTTP_200_OK)
+
         token = serializer.validated_data['token']  # 토큰 받아오기
         user = serializer.validated_data['user']  # 사용자 정보 가져오기
         return Response({
@@ -76,7 +97,14 @@ class UpdateProfileView(generics.RetrieveAPIView):
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()  # user 인스턴스 가져오기
         serializer = self.get_serializer(instance, data=request.data, partial=True)  # PATCH 요청 처리
-        serializer.is_valid(raise_exception=True)  # 유효성 검사
+        
+        # 유효성 검사
+        if not serializer.is_valid():
+            return Response({
+                "errors": serializer.errors,
+                "message": "프로필 업데이트에 실패했습니다."
+            }, status=status.HTTP_200_OK)
+
         serializer.save()  # 데이터 저장
         return Response({"username": serializer.data['username']})  # 업데이트된 닉네임 반환
 
@@ -135,10 +163,10 @@ class UserThemeView(APIView):
         purchased_themes = [purchase.item.item_name for purchase in purchased_items if purchase.item.item_type == 'theme']
 
         # 선택된 테마 업데이트
-        if selected_theme in purchased_themes:
+        if (selected_theme in purchased_themes) or (selected_theme == "기본 테마"):
             user_theme.selected_theme = selected_theme
             user_theme.save()
 
             return Response({"message": "테마가 변경되었습니다."}, status=status.HTTP_200_OK)
-
-        return Response({"message": "테마를 구매 후 변경해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "테마를 구매 후 변경해주세요."}, status=status.HTTP_202_ACCEPTED)
