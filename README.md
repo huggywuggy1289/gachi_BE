@@ -11,7 +11,6 @@
 ### 👍🏻 팀원 
 <h2>🦁 백엔드 🦁</h2>
 
-|이름| |개발 분야|개인 레포|역할|
 <table border="" cellspacing="0" cellpadding="0" width="50%">
   <tr width="100%">
   <td align="center">손재윤</a></td>
