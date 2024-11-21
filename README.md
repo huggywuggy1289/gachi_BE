@@ -29,11 +29,9 @@
           <td  align="center"><p>유저앱/마켓앱/어스앱</p><p>..</p></td>
      </tr>
   </table>
-
-
 <br>
 </p>
 
-조인어스 인스타그램: https://www.instagram.com/joinusearth_official/profilecard/?igsh=aXlsaGJ4N3V3OGg3
+<h3>조인어스 인스타그램: https://www.instagram.com/joinusearth_official/profilecard/?igsh=aXlsaGJ4N3V3OGg3</h3>
 
 ![image](https://github.com/user-attachments/assets/0e11b80c-b7c9-4614-9b18-e8ad2ff3b673)
