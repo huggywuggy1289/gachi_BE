@@ -6,35 +6,27 @@
    대상 수상 🏆
 </div>
 <p>
-  <br>
 
-### 👍🏻 팀원 
-<h2>🦁 백엔드 🦁</h2>
-
-<table border="" cellspacing="0" cellpadding="0" width="50%">
-  <tr width="100%">
-  <td align="center">손재윤</a></td>
-  <td align="center">김나영</a></td>
-  </tr>
-  <tr width="100%">
-  <td  align="center"><a href="https://github.com/user-attachments/assets/e74cf01b-ede9-48b3-9067-dd62d1674f18"><img src="https://github.com/user-attachments/assets/e74cf01b-ede9-48b3-9067-dd62d1674f18" alt="befbedf87e51f5b02aac8b882ada60fd-sticker" border="0" width="90px"></a></td>
-  <td  align="center"><a href="https://github.com/user-attachments/assets/bb581b85-2d70-498a-b5c9-712ee7ee62d4"><img src="https://github.com/user-attachments/assets/bb581b85-2d70-498a-b5c9-712ee7ee62d4" alt="befbedf87e51f5b02aac8b882ada60fd-sticker" border="0" width="90px"></a></td>
-  </tr>
-  <tr width="100%">
-  <td  align="center">백엔드</td>
-  <td  align="center">백엔드</td>
-     </tr>
-      <tr width="100%">
-          <td  align="center"><p>유저앱</p><p>마이페이지</p><p>조인앱</p></td>
-          <td  align="center"><p>유저앱/마켓앱/어스앱</p><p>..</p></td>
-     </tr>
-  </table>
 <br>
-</p>
 
-<h3>조인어스 인스타그램: https://www.instagram.com/joinusearth_official/profilecard/?igsh=aXlsaGJ4N3V3OGg3</h3>
+![4호선톤 - 조인어스 (지구를 위해, 같이)-01](https://github.com/user-attachments/assets/aa7aca06-03d6-40b3-920a-bda0d67f14c5)
 
-![image](https://github.com/user-attachments/assets/0e11b80c-b7c9-4614-9b18-e8ad2ff3b673)
+<div align=center> 
+  <h3>
+    <a href="https://join-earth.vercel.app/"> 
+      조인어스 하기 🌿 
+    </a>
+  </h3> 
+</div>
+
+<br>
+<br>
+
+<br>
+
+## 🛠️ 사용 언어, 개발환경, 개발 툴
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Python](https://img.shields.io/badge/Python-14354C?style=for-the-badge&logo=python&logoColor=white)
 
 <br>
 
@@ -57,3 +49,16 @@
 <img width="1386" src="https://github.com/user-attachments/assets/8e2e0af8-58b3-4551-8bea-1d035ee0334a">
 
 <br>
+<br>
+
+### 👍🏻 팀원 
+|이름| |개발 분야|개인 레포|역할|
+|---|---|---|---|---|
+|손재윤|<img src="https://github.com/user-attachments/assets/e74cf01b-ede9-48b3-9067-dd62d1674f18" alt="befbedf87e51f5b02aac8b882ada60fd-sticker" border="0" width="90px">|backend|[huggywuggy1289](https://github.com/huggywuggy1289)|유저앱, 마이페이지, 조인앱|
+|김나영|<img src="https://i.ibb.co/LpLKYcG/Kakao-Talk-20240705-222222797.png" alt="Kakao-Talk-20240705-222222797" border="0" width="65px">|backend|[bea816](https://github.com/bea816)|유저앱, 마켓앱, 어스앱|
+
+<br>
+<br>
+
+<img width="1386" src="https://github.com/user-attachments/assets/67452330-f2fe-4433-ac9e-1adf4ed91837">
+
